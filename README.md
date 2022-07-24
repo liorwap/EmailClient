@@ -14,5 +14,6 @@ Supported vendors:
 * Walla
 * Yahoo
 
-Note that this is in POC stage currently there is no support for using the Email Client Emulator 
-in other host then EmailServer. 
+# Usage
+Under resources/backend.properties file set the IP and port for the backend server and start the client.
+if client is running on same host as server with default configurations there is no need to change the file.

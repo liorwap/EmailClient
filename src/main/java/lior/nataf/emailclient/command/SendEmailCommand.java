@@ -2,6 +2,8 @@ package lior.nataf.emailclient.command;
 
 import lior.nataf.emailclient.exception.InvalidEmailException;
 import lior.nataf.emailclient.validator.EmailValidator;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.MediaType;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -13,9 +15,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
 @ShellComponent
+@PropertySource(value={"classpath:backend.properties"})
 public class SendEmailCommand {
+
+    @Value("${backend.ip}")
+    private String backendIp;
+
+    @Value("${backend.port}")
+    private String backendPort;
 
     private final EmailValidator emailValidator;
 
@@ -31,7 +39,7 @@ public class SendEmailCommand {
         MultiValueMap<String, String> email = createMail(from, to, body);
         WebClient client = WebClient.create();
         return client.post()
-                .uri(new URI("http://localhost:8080/sendEmail"))
+                .uri(new URI("http://" + backendIp + ":" + backendPort + "/sendEmail"))
                 .header("Content-Type", "application/json")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromFormData(email))
