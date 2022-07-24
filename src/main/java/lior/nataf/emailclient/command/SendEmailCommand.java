@@ -1,9 +1,7 @@
 package lior.nataf.emailclient.command;
 
 import lior.nataf.emailclient.exception.InvalidEmailException;
-import lior.nataf.emailclient.model.Email;
 import lior.nataf.emailclient.validator.EmailValidator;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -16,7 +14,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-@Slf4j
 @ShellComponent
 public class SendEmailCommand {
 
@@ -30,13 +27,9 @@ public class SendEmailCommand {
     public String sendEmail(@ShellOption({"-F", "--from"}) String from,
                             @ShellOption({"-T", "--to"}) String to,
                             @ShellOption({"-M", "--body"}) String body) throws URISyntaxException, InvalidEmailException {
-        emailValidator.validateAddress(from);
-        emailValidator.validateAddress(to);
-        MultiValueMap<String, String> email = new LinkedMultiValueMap<>();
+        validateEmail(from, to);
+        MultiValueMap<String, String> email = createMail(from, to, body);
         WebClient client = WebClient.create();
-        email.add("from", from);
-        email.add("to", to);
-        email.add("body", body);
         return client.post()
                 .uri(new URI("http://localhost:8080/sendEmail"))
                 .header("Content-Type", "application/json")
@@ -45,5 +38,18 @@ public class SendEmailCommand {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
+    }
+
+    private void validateEmail(String from, String to) throws InvalidEmailException {
+        emailValidator.validateAddress(from);
+        emailValidator.validateAddress(to);
+    }
+
+    private MultiValueMap<String, String> createMail(String from, String to, String body) {
+        return new LinkedMultiValueMap<>() {{
+            add("from", from);
+            add("to", to);
+            add("body", body);
+        }};
     }
 }
